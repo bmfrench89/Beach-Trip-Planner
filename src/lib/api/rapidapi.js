@@ -17,45 +17,11 @@
  */
 export async function searchRentals({ destination, checkIn, checkOut, adults, kids, budget }) {
     const apiKey = process.env.RAPIDAPI_KEY;
-    const apiHost = process.env.RAPIDAPI_HOST;
+    const apiHost = process.env.RAPIDAPI_HOST_BOOKING;
 
     if (!apiKey) {
-        console.warn('RapidAPI key missing, using mock data');
-        return [
-            {
-                id: 'MOCK_RENTAL_1',
-                title: 'Luxury Beachfront Villa',
-                type: 'Vacation Rental',
-                price: 4500,
-                currency: 'USD',
-                rating: 4.9,
-                image: 'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?auto=format&fit=crop&w=800&q=80',
-                location: destination,
-                specs: { beds: 4, guests: 8 }
-            },
-            {
-                id: 'MOCK_RENTAL_2',
-                title: 'Cozy Coastal Cottage',
-                type: 'Vacation Rental',
-                price: 2200,
-                currency: 'USD',
-                rating: 4.6,
-                image: 'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=800&q=80',
-                location: destination,
-                specs: { beds: 2, guests: 4 }
-            },
-            {
-                id: 'MOCK_RENTAL_3',
-                title: 'Modern Ocean Condo',
-                type: 'Vacation Rental',
-                price: 3100,
-                currency: 'USD',
-                rating: 4.7,
-                image: 'https://images.unsplash.com/photo-1512918760513-95f1929c3d38?auto=format&fit=crop&w=800&q=80',
-                location: destination,
-                specs: { beds: 3, guests: 6 }
-            }
-        ].filter(r => r.price <= budget);
+        console.warn('RapidAPI key missing');
+        return [];
     }
 
     // Mapping destination to Hotels.com Destination IDs (approximate for MVP)

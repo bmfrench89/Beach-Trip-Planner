@@ -1,5 +1,6 @@
 import { searchHotels } from '@/lib/api/amadeus';
 import { searchRentals } from '@/lib/api/rapidapi';
+import { searchVrbo } from '@/lib/api/vrbo';
 import SearchResults from '@/components/SearchResults';
 
 /**
@@ -21,7 +22,7 @@ export default async function SearchPage({ searchParams }) {
   const numBudget = parseInt(budget || '10000');
 
   // Fetch data in parallel
-  const [hotels, rentals] = await Promise.all([
+  const [hotels, rentals, vrboListings] = await Promise.all([
     searchHotels({
       destination,
       checkIn,
@@ -36,10 +37,16 @@ export default async function SearchPage({ searchParams }) {
       adults: numAdults,
       kids: numKids,
       budget: numBudget
+    }),
+    searchVrbo({
+      location: destination,
+      checkIn,
+      checkOut,
+      guests: numAdults + numKids
     })
   ]);
 
-  const allListings = [...hotels, ...rentals];
+  const allListings = [...hotels, ...rentals, ...vrboListings];
 
   return (
     <SearchResults
