@@ -2,9 +2,15 @@ export async function searchVrbo(params) {
     const { location, checkIn, checkOut, guests } = params;
 
     try {
-        console.log(`Searching VRBO for: ${location}`);
+        // Map generic state codes to specific beach destinations
+        const searchLocation = location === 'NC' ? 'Wrightsville Beach, NC' :
+            location === 'SC' ? 'Myrtle Beach, SC' :
+                location;
+
+        console.log(`Searching VRBO for: ${searchLocation} (Original: ${location})`);
+
         // 1. Geocode the location using OpenStreetMap (Nominatim)
-        const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(location)}&format=json&limit=1`, {
+        const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchLocation)}&format=json&limit=1`, {
             headers: {
                 'User-Agent': 'BeachTripPlanner/1.0'
             }

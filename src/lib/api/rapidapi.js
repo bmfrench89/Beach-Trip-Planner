@@ -56,7 +56,12 @@ export async function searchRentals({ destination, checkIn, checkOut, adults, ki
         });
         const searchData = await searchRes.json();
 
-        if (!searchData.data || !searchData.data.hotels) return [];
+        if (!searchData.data || !searchData.data.hotels) {
+            console.warn(`Booking.com: No hotels found for ${query}`);
+            return [];
+        }
+
+        console.log(`Booking.com: Found ${searchData.data.hotels.length} raw results for ${query}`);
 
         // 3. Transform
         return searchData.data.hotels.map(prop => ({

@@ -21,10 +21,10 @@ export default function SearchForm() {
   const [destination, setDestination] = useState('Carolinas');
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
-  const [adults, setAdults] = useState(7);
-  const [kids, setKids] = useState(5);
-  const [babies, setBabies] = useState(2);
-  const [budget, setBudget] = useState(11000);
+  const [adults, setAdults] = useState('');
+  const [kids, setKids] = useState('');
+  const [babies, setBabies] = useState('');
+  const [budget, setBudget] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();

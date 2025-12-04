@@ -16,7 +16,7 @@ import Link from 'next/link';
  * @param {number} props.budget - Max budget filter
  * @returns {JSX.Element} The rendered Search Results grid
  */
-export default function SearchResults({ listings, destination, numGuests, budget }) {
+export default function SearchResults({ listings, destination, numGuests, budget, debugInfo }) {
   return (
     <div className="search-page">
       <header className="results-header">
@@ -46,6 +46,15 @@ export default function SearchResults({ listings, destination, numGuests, budget
             <h2>No listings found</h2>
             <p>Try adjusting your budget or dates.</p>
             <p className="api-note">Note: If you haven't added API keys yet, results will be empty.</p>
+
+            {debugInfo && (
+              <div className="debug-info" style={{ marginTop: '20px', padding: '20px', background: '#1e293b', borderRadius: '8px', textAlign: 'left' }}>
+                <h3 style={{ color: '#f472b6', marginBottom: '10px' }}>Debug Info</h3>
+                <pre style={{ color: '#94a3b8', fontSize: '0.8rem', overflowX: 'auto' }}>
+                  {JSON.stringify(debugInfo, null, 2)}
+                </pre>
+              </div>
+            )}
           </div>
         )}
       </main>
