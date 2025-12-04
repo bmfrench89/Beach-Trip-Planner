@@ -1,19 +1,9 @@
 /**
- * Search Vacation Rentals via RapidAPI (Hotels.com)
+ * Search Vacation Rentals via RapidAPI (Booking.com)
  * 
- * 1. Maps destination to Hotels.com region IDs.
- * 2. Constructs the complex JSON payload for the API.
- * 3. Fetches properties matching the criteria.
- * 4. Transforms the data into a unified listing format.
- * 
- * @param {Object} params - Search parameters
- * @param {string} params.destination - 'NC' or 'SC'
- * @param {string} params.checkIn - Check-in date (YYYY-MM-DD)
- * @param {string} params.checkOut - Check-out date (YYYY-MM-DD)
- * @param {number} params.adults - Number of adults
- * @param {number} params.kids - Number of children
- * @param {number} params.budget - Max budget
- * @returns {Promise<Array>} Array of rental listings
+ * 1. Search for the destination ID (e.g., "Myrtle Beach")
+ * 2. Search for hotels/rentals using that ID
+ * 3. Transform data to unified format
  */
 export async function searchRentals({ destination, checkIn, checkOut, adults, kids, budget }) {
     const apiKey = process.env.RAPIDAPI_KEY;
@@ -25,73 +15,66 @@ export async function searchRentals({ destination, checkIn, checkOut, adults, ki
     }
     console.log(`Searching Rentals with Host: ${apiHost}`);
 
-    // Mapping destination to Hotels.com Destination IDs (approximate for MVP)
-    // Myrtle Beach, SC: 1506246
-    // Outer Banks, NC: 1636368 (Using Wilmington 178317 for simpler test)
-    const destinationId = destination === 'NC' ? '178317' : '1506246';
-
-    const totalGuests = adults + kids;
-
-    const url = `https://${apiHost}/properties/v2/list`;
-
-    const payload = {
-        currency: "USD",
-        eapid: 1,
-        locale: "en_US",
-        siteId: 300000001,
-        destination: { regionId: destinationId },
-        checkInDate: {
-            day: parseInt(checkIn.split('-')[2]),
-            month: parseInt(checkIn.split('-')[1]),
-            year: parseInt(checkIn.split('-')[0])
-        },
-        checkOutDate: {
-            day: parseInt(checkOut.split('-')[2]),
-            month: parseInt(checkOut.split('-')[1]),
-            year: parseInt(checkOut.split('-')[0])
-        },
-        rooms: [
-            { adults: adults, children: Array(kids).fill({ age: 10 }) } // Assuming avg kid age
-        ],
-        resultsStartingIndex: 0,
-        resultsSize: 20,
-        sort: "PRICE_LOW_TO_HIGH",
-        filters: {
-            price: {
-                max: budget
-            }
-        }
-    };
-
     try {
-        const response = await fetch(url, {
-            method: 'POST',
+        // 1. Get Destination ID
+        // Map 'NC' -> 'Wilmington', 'SC' -> 'Myrtle Beach' for better results
+        const query = destination === 'NC' ? 'Wilmington' : 'Myrtle Beach';
+
+        const destUrl = `https://${apiHost}/api/v1/hotels/searchDestination?query=${encodeURIComponent(query)}`;
+        const destRes = await fetch(destUrl, {
             headers: {
-                'content-type': 'application/json',
-                'X-RapidAPI-Key': apiKey,
-                'X-RapidAPI-Host': apiHost
-            },
-            body: JSON.stringify(payload)
+                'x-rapidapi-key': apiKey,
+                'x-rapidapi-host': apiHost
+            }
         });
+        const destData = await destRes.json();
 
-        const data = await response.json();
+        if (!destData.data || destData.data.length === 0) {
+            console.warn('Booking.com: No destination found');
+            return [];
+        }
 
-        if (!data.data?.propertySearch?.properties) return [];
+        const destId = destData.data[0].dest_id;
+        const searchType = destData.data[0].search_type;
 
-        return data.data.propertySearch.properties.map(prop => ({
-            id: prop.id,
-            title: prop.name,
+        // 2. Search Properties
+        const searchUrl = new URL(`https://${apiHost}/api/v1/hotels/searchHotels`);
+        searchUrl.searchParams.append('dest_id', destId);
+        searchUrl.searchParams.append('search_type', searchType);
+        searchUrl.searchParams.append('arrival_date', checkIn);
+        searchUrl.searchParams.append('departure_date', checkOut);
+        searchUrl.searchParams.append('adults_number', adults);
+        searchUrl.searchParams.append('room_qty', '1');
+        searchUrl.searchParams.append('sort_by', 'price');
+        searchUrl.searchParams.append('categories_filter_ids', 'class::2,class::4,free_cancellation::1');
+
+        const searchRes = await fetch(searchUrl.toString(), {
+            headers: {
+                'x-rapidapi-key': apiKey,
+                'x-rapidapi-host': apiHost
+            }
+        });
+        const searchData = await searchRes.json();
+
+        if (!searchData.data || !searchData.data.hotels) return [];
+
+        // 3. Transform
+        return searchData.data.hotels.map(prop => ({
+            id: prop.property.id || `booking-${Math.random()}`,
+            title: prop.property.name,
             type: 'Vacation Rental',
-            price: prop.price?.lead?.amount || 0,
-            currency: 'USD',
-            rating: prop.reviews?.score || 'N/A',
-            image: prop.propertyImage?.image?.url || null,
+            price: prop.property.priceBreakdown?.grossPrice?.value || 0,
+            currency: prop.property.priceBreakdown?.grossPrice?.currency || 'USD',
+            rating: prop.property.reviewScore || 'N/A',
+            image: prop.property.photoUrls?.[0] || '',
             location: destination,
             specs: {
                 beds: 'Varies',
-                guests: totalGuests
-            }
-        }));
+                guests: adults + kids
+            },
+            source: 'booking',
+            link: '#' // Booking.com API doesn't always give a direct link in this endpoint
+        })).filter(r => r.price <= budget);
 
     } catch (error) {
         console.error('RapidAPI Search Error:', error);

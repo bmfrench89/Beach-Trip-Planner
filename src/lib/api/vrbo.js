@@ -22,7 +22,7 @@ export async function searchVrbo(params) {
         const url = new URL('https://vrbo1.p.rapidapi.com/vacation-rental-data/vrbo/search');
         url.searchParams.append('latitude', lat);
         url.searchParams.append('longitude', lon);
-        url.searchParams.append('radiusMiles', '20');
+        url.searchParams.append('radiusMiles', '1'); // Fixed: Reduced radius to 1 mile
         url.searchParams.append('checkIn', checkIn || '');
         url.searchParams.append('checkOut', checkOut || '');
         url.searchParams.append('adultsCount', guests || 1);
