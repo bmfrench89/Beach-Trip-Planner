@@ -22,31 +22,30 @@ export default async function SearchPage({ searchParams }) {
   const numBudget = parseInt(budget || '10000');
 
   // Fetch data in parallel
-  const [hotels, rentals, vrboListings] = await Promise.all([
-    searchHotels({
-      destination,
-      checkIn,
-      checkOut,
-      adults: numAdults,
-      budget: numBudget
-    }),
-    searchRentals({
-      destination,
-      checkIn,
-      checkOut,
-      adults: numAdults,
-      kids: numKids,
-      budget: numBudget
-    }),
-    searchVrbo({
-      location: destination,
-      checkIn,
-      checkOut,
-      guests: numAdults + numKids
-    })
+  // Fetch data for both NC and SC in parallel
+  const [
+    hotelsNC, hotelsSC,
+    rentalsNC, rentalsSC,
+    vrboNC, vrboSC
+  ] = await Promise.all([
+    // Hotels
+    searchHotels({ destination: 'NC', checkIn, checkOut, adults: numAdults, budget: numBudget }),
+    searchHotels({ destination: 'SC', checkIn, checkOut, adults: numAdults, budget: numBudget }),
+
+    // Booking.com Rentals
+    searchRentals({ destination: 'NC', checkIn, checkOut, adults: numAdults, kids: numKids, budget: numBudget }),
+    searchRentals({ destination: 'SC', checkIn, checkOut, adults: numAdults, kids: numKids, budget: numBudget }),
+
+    // VRBO
+    searchVrbo({ location: 'NC', checkIn, checkOut, guests: numAdults + numKids }),
+    searchVrbo({ location: 'SC', checkIn, checkOut, guests: numAdults + numKids })
   ]);
 
-  const allListings = [...hotels, ...rentals, ...vrboListings];
+  const allListings = [
+    ...hotelsNC, ...hotelsSC,
+    ...rentalsNC, ...rentalsSC,
+    ...vrboNC, ...vrboSC
+  ];
 
   return (
     <SearchResults

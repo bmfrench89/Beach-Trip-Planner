@@ -18,7 +18,7 @@ import { useRouter } from 'next/navigation';
  */
 export default function SearchForm() {
   const router = useRouter();
-  const [destination, setDestination] = useState('NC');
+  const [destination, setDestination] = useState('Carolinas');
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const [adults, setAdults] = useState(7);
@@ -43,29 +43,7 @@ export default function SearchForm() {
   return (
     <form onSubmit={handleSubmit} className="search-form">
       <div className="form-group">
-        <label>Destination</label>
-        <div className="radio-group">
-          <label className={`radio-btn ${destination === 'NC' ? 'active' : ''}`}>
-            <input
-              type="radio"
-              name="dest"
-              value="NC"
-              checked={destination === 'NC'}
-              onChange={(e) => setDestination(e.target.value)}
-            />
-            North Carolina
-          </label>
-          <label className={`radio-btn ${destination === 'SC' ? 'active' : ''}`}>
-            <input
-              type="radio"
-              name="dest"
-              value="SC"
-              checked={destination === 'SC'}
-              onChange={(e) => setDestination(e.target.value)}
-            />
-            South Carolina
-          </label>
-        </div>
+        {/* Destination selector removed - defaulting to Carolinas */}
       </div>
 
       <div className="form-row">
