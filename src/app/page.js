@@ -2,6 +2,14 @@
 
 import SearchForm from '@/components/SearchForm';
 
+/**
+ * Home Page Component
+ * 
+ * The landing page of the application. It features a hero section with a search form
+ * to allow users to start planning their beach trip.
+ * 
+ * @returns {JSX.Element} The rendered Home page
+ */
 export default function Home() {
   return (
     <main className="main">

@@ -8,7 +8,12 @@ WORKDIR /app
 
 # Install dependencies based on the preferred package manager
 COPY package.json package-lock.json* ./
+COPY prisma ./prisma
 RUN npm ci
+
+# Generate Prisma Client
+ENV DATABASE_URL="file:./dev.db"
+RUN npx prisma generate
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -21,6 +26,7 @@ COPY . .
 # Uncomment the following line in case you want to disable telemetry during the build.
 # ENV NEXT_TELEMETRY_DISABLED 1
 
+ENV DATABASE_URL="file:./dev.db"
 RUN npm run build
 
 # Production image, copy all the files and run next
@@ -34,7 +40,14 @@ ENV NODE_ENV production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
+# Install OpenSSL for Prisma
+RUN apk add --no-cache openssl
+
 COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+
+# Install prisma locally for migrations
+RUN npm install prisma@5.22.0
 
 # Set the correct permission for prerender cache
 RUN mkdir .next
@@ -52,5 +65,6 @@ EXPOSE 3000
 ENV PORT 3000
 # set hostname to localhost
 ENV HOSTNAME "0.0.0.0"
+ENV DATABASE_URL="file:./dev.db"
 
-CMD ["node", "server.js"]
+CMD ["sh", "-c", "npx prisma db push --skip-generate && node server.js"]

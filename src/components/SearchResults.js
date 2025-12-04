@@ -3,41 +3,54 @@
 import ListingCard from '@/components/ListingCard';
 import Link from 'next/link';
 
+/**
+ * Search Results Component
+ * 
+ * Displays the grid of listing cards based on the search results.
+ * Handles empty states and provides navigation back to search or to favorites.
+ * 
+ * @param {Object} props - Component props
+ * @param {Array} props.listings - Array of listing objects to display
+ * @param {string} props.destination - Current destination filter
+ * @param {number} props.numGuests - Total number of guests
+ * @param {number} props.budget - Max budget filter
+ * @returns {JSX.Element} The rendered Search Results grid
+ */
 export default function SearchResults({ listings, destination, numGuests, budget }) {
-    return (
-        <div className="search-page">
-            <header className="results-header">
-                <div className="container">
-                    <div className="header-content">
-                        <Link href="/" className="back-link">← Back to Search</Link>
-                        <h1>
-                            {destination === 'NC' ? 'North Carolina' : 'South Carolina'} Stays
-                        </h1>
-                        <p className="stats">
-                            Found {listings.length} results for {numGuests} guests under ${budget.toLocaleString()}
-                        </p>
-                    </div>
-                    <Link href="/favorites" className="favorites-link">
-                        View Favorites ♥
-                    </Link>
-                </div>
-            </header>
+  return (
+    <div className="search-page">
+      <header className="results-header">
+        <div className="container">
+          <div className="header-content">
+            <Link href="/" className="back-link">← Back to Search</Link>
+            <h1>
+              {destination === 'NC' ? 'North Carolina' : 'South Carolina'} Stays
+            </h1>
+            <p className="stats">
+              Found {listings.length} results for {numGuests} guests under ${budget.toLocaleString()}
+            </p>
+          </div>
+          <Link href="/favorites" className="favorites-link">
+            View Favorites ♥
+          </Link>
+        </div>
+      </header>
 
-            <main className="container results-grid">
-                {listings.length > 0 ? (
-                    listings.map(listing => (
-                        <ListingCard key={listing.id} listing={listing} />
-                    ))
-                ) : (
-                    <div className="no-results">
-                        <h2>No listings found</h2>
-                        <p>Try adjusting your budget or dates.</p>
-                        <p className="api-note">Note: If you haven't added API keys yet, results will be empty.</p>
-                    </div>
-                )}
-            </main>
+      <main className="container results-grid">
+        {listings.length > 0 ? (
+          listings.map(listing => (
+            <ListingCard key={listing.id} listing={listing} />
+          ))
+        ) : (
+          <div className="no-results">
+            <h2>No listings found</h2>
+            <p>Try adjusting your budget or dates.</p>
+            <p className="api-note">Note: If you haven't added API keys yet, results will be empty.</p>
+          </div>
+        )}
+      </main>
 
-            <style jsx>{`
+      <style jsx>{`
         .search-page {
           min-height: 100vh;
           padding-bottom: 80px;
@@ -110,6 +123,6 @@ export default function SearchResults({ listings, destination, numGuests, budget
           font-style: italic;
         }
       `}</style>
-        </div>
-    );
+    </div>
+  );
 }

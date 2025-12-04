@@ -2,52 +2,79 @@
 
 import { useFavorites } from '@/lib/store';
 
+/**
+ * Listing Card Component
+ * 
+ * Displays a single listing with its image, details, and price.
+ * Includes a heart button to toggle the favorite status of the listing.
+ * 
+ * @param {Object} props - Component props
+ * @param {Object} props.listing - The listing data object
+ * @returns {JSX.Element} The rendered Listing Card
+ */
 export default function ListingCard({ listing }) {
-    const { toggleFavorite, isFavorite } = useFavorites();
-    const favorite = isFavorite(listing.id);
+  const { toggleFavorite, isFavorite, currentUser, toggleVote } = useFavorites();
+  const favorite = isFavorite(listing.id);
 
-    return (
-        <div className="card listing-card">
-            <div className="image-container">
-                {listing.image ? (
-                    <img src={listing.image} alt={listing.title} className="listing-image" />
-                ) : (
-                    <div className="placeholder-image">
-                        <span>No Image</span>
-                    </div>
-                )}
-                <button
-                    className={`favorite-btn ${favorite ? 'active' : ''}`}
-                    onClick={() => toggleFavorite(listing)}
-                >
-                    ♥
-                </button>
-            </div>
+  const isFavoritesPage = !!listing.votes;
+  const voteCount = listing.votes?.length || 0;
+  const hasVoted = listing.votes?.some(v => v.user === currentUser);
 
-            <div className="content">
-                <div className="header">
-                    <h3>{listing.title}</h3>
-                    <span className="rating">★ {listing.rating}</span>
-                </div>
+  return (
+    <div className="card listing-card">
+      <div className="image-container">
+        {listing.image ? (
+          <img src={listing.image} alt={listing.title} className="listing-image" />
+        ) : (
+          <div className="placeholder-image">
+            <span>No Image</span>
+          </div>
+        )}
+        <button
+          className={`favorite-btn ${favorite ? 'active' : ''}`}
+          onClick={() => toggleFavorite(listing)}
+        >
+          ♥
+        </button>
+      </div>
 
-                <div className="specs">
-                    <span>{listing.type}</span>
-                    <span>•</span>
-                    <span>{listing.specs.beds} Beds</span>
-                    <span>•</span>
-                    <span>Max {listing.specs.guests} Guests</span>
-                </div>
+      <div className="content">
+        <div className="header">
+          <h3>{listing.title}</h3>
+          <span className="rating">★ {listing.rating}</span>
+        </div>
 
-                <div className="footer">
-                    <div className="price">
-                        <span className="amount">${Math.round(listing.price).toLocaleString()}</span>
-                        <span className="period">/total</span>
-                    </div>
-                    <a href="#" className="view-btn">View Details</a>
-                </div>
-            </div>
+        <div className="specs">
+          <span>{listing.type}</span>
+          <span>•</span>
+          <span>{listing.specs.beds} Beds</span>
+          <span>•</span>
+          <span>Max {listing.specs.guests} Guests</span>
+        </div>
 
-            <style jsx>{`
+        <div className="footer">
+          <div className="price">
+            <span className="amount">${Math.round(listing.price).toLocaleString()}</span>
+            <span className="period">/total</span>
+          </div>
+
+          {isFavoritesPage ? (
+            <button
+              className={`vote-btn ${hasVoted ? 'voted' : ''}`}
+              onClick={(e) => {
+                e.preventDefault();
+                toggleVote(listing.id);
+              }}
+            >
+              ▲ {voteCount}
+            </button>
+          ) : (
+            <a href="#" className="view-btn">View Details</a>
+          )}
+        </div>
+      </div>
+
+      <style jsx>{`
         .listing-card {
           display: flex;
           flex-direction: column;
@@ -176,7 +203,29 @@ export default function ListingCard({ listing }) {
         .view-btn:hover {
           background: #475569;
         }
+
+        .vote-btn {
+            background: #334155;
+            border: none;
+            color: #94a3b8;
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .vote-btn:hover {
+            background: #475569;
+            color: #f8fafc;
+        }
+        .vote-btn.voted {
+            background: var(--primary);
+            color: white;
+        }
       `}</style>
-        </div>
-    );
+    </div>
+  );
 }

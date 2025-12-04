@@ -2,6 +2,16 @@ import { searchHotels } from '@/lib/api/amadeus';
 import { searchRentals } from '@/lib/api/rapidapi';
 import SearchResults from '@/components/SearchResults';
 
+/**
+ * Search Page Component
+ * 
+ * Fetches and displays search results from both Amadeus (hotels) and RapidAPI (rentals).
+ * Data fetching is performed in parallel for better performance.
+ * 
+ * @param {Object} props - Component props
+ * @param {Object} props.searchParams - URL search parameters (destination, dates, guests, budget)
+ * @returns {JSX.Element} The rendered Search page with results
+ */
 export default async function SearchPage({ searchParams }) {
   const { destination, checkIn, checkOut, adults, kids, babies, budget } = searchParams;
 

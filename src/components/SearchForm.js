@@ -3,130 +3,143 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+/**
+ * Search Form Component
+ * 
+ * A complex form that captures user preferences for the trip:
+ * - Destination (NC vs SC)
+ * - Dates (Check-in/Check-out)
+ * - Guest counts (Adults, Kids, Babies)
+ * - Budget slider
+ * 
+ * Updates the URL query parameters on submission to trigger a search.
+ * 
+ * @returns {JSX.Element} The rendered Search Form
+ */
 export default function SearchForm() {
-    const router = useRouter();
-    const [destination, setDestination] = useState('NC');
-    const [checkIn, setCheckIn] = useState('');
-    const [checkOut, setCheckOut] = useState('');
-    const [adults, setAdults] = useState(7);
-    const [kids, setKids] = useState(5);
-    const [babies, setBabies] = useState(2);
-    const [budget, setBudget] = useState(11000);
+  const router = useRouter();
+  const [destination, setDestination] = useState('NC');
+  const [checkIn, setCheckIn] = useState('');
+  const [checkOut, setCheckOut] = useState('');
+  const [adults, setAdults] = useState(7);
+  const [kids, setKids] = useState(5);
+  const [babies, setBabies] = useState(2);
+  const [budget, setBudget] = useState(11000);
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        const params = new URLSearchParams({
-            destination,
-            checkIn,
-            checkOut,
-            adults,
-            kids,
-            babies,
-            budget,
-        });
-        router.push(`/search?${params.toString()}`);
-    };
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const params = new URLSearchParams({
+      destination,
+      checkIn,
+      checkOut,
+      adults,
+      kids,
+      babies,
+      budget,
+    });
+    router.push(`/search?${params.toString()}`);
+  };
 
-    return (
-        <form onSubmit={handleSubmit} className="search-form">
-            <div className="form-group">
-                <label>Destination</label>
-                <div className="radio-group">
-                    <label className={`radio-btn ${destination === 'NC' ? 'active' : ''}`}>
-                        <input
-                            type="radio"
-                            name="dest"
-                            value="NC"
-                            checked={destination === 'NC'}
-                            onChange={(e) => setDestination(e.target.value)}
-                        />
-                        North Carolina
-                    </label>
-                    <label className={`radio-btn ${destination === 'SC' ? 'active' : ''}`}>
-                        <input
-                            type="radio"
-                            name="dest"
-                            value="SC"
-                            checked={destination === 'SC'}
-                            onChange={(e) => setDestination(e.target.value)}
-                        />
-                        South Carolina
-                    </label>
-                </div>
-            </div>
+  return (
+    <form onSubmit={handleSubmit} className="search-form">
+      <div className="form-group">
+        <label>Destination</label>
+        <div className="radio-group">
+          <label className={`radio-btn ${destination === 'NC' ? 'active' : ''}`}>
+            <input
+              type="radio"
+              name="dest"
+              value="NC"
+              checked={destination === 'NC'}
+              onChange={(e) => setDestination(e.target.value)}
+            />
+            North Carolina
+          </label>
+          <label className={`radio-btn ${destination === 'SC' ? 'active' : ''}`}>
+            <input
+              type="radio"
+              name="dest"
+              value="SC"
+              checked={destination === 'SC'}
+              onChange={(e) => setDestination(e.target.value)}
+            />
+            South Carolina
+          </label>
+        </div>
+      </div>
 
-            <div className="form-row">
-                <div className="form-group">
-                    <label>Check-in</label>
-                    <input
-                        type="date"
-                        required
-                        value={checkIn}
-                        onChange={(e) => setCheckIn(e.target.value)}
-                    />
-                </div>
-                <div className="form-group">
-                    <label>Check-out</label>
-                    <input
-                        type="date"
-                        required
-                        value={checkOut}
-                        onChange={(e) => setCheckOut(e.target.value)}
-                    />
-                </div>
-            </div>
+      <div className="form-row">
+        <div className="form-group">
+          <label>Check-in</label>
+          <input
+            type="date"
+            required
+            value={checkIn}
+            onChange={(e) => setCheckIn(e.target.value)}
+          />
+        </div>
+        <div className="form-group">
+          <label>Check-out</label>
+          <input
+            type="date"
+            required
+            value={checkOut}
+            onChange={(e) => setCheckOut(e.target.value)}
+          />
+        </div>
+      </div>
 
-            <div className="form-group">
-                <label>Guests</label>
-                <div className="guests-grid">
-                    <div className="guest-input">
-                        <span>Adults</span>
-                        <input
-                            type="number"
-                            min="1"
-                            value={adults}
-                            onChange={(e) => setAdults(parseInt(e.target.value))}
-                        />
-                    </div>
-                    <div className="guest-input">
-                        <span>Kids</span>
-                        <input
-                            type="number"
-                            min="0"
-                            value={kids}
-                            onChange={(e) => setKids(parseInt(e.target.value))}
-                        />
-                    </div>
-                    <div className="guest-input">
-                        <span>Babies</span>
-                        <input
-                            type="number"
-                            min="0"
-                            value={babies}
-                            onChange={(e) => setBabies(parseInt(e.target.value))}
-                        />
-                    </div>
-                </div>
-            </div>
+      <div className="form-group">
+        <label>Guests</label>
+        <div className="guests-grid">
+          <div className="guest-input">
+            <span>Adults</span>
+            <input
+              type="number"
+              min="1"
+              value={adults}
+              onChange={(e) => setAdults(parseInt(e.target.value))}
+            />
+          </div>
+          <div className="guest-input">
+            <span>Kids</span>
+            <input
+              type="number"
+              min="0"
+              value={kids}
+              onChange={(e) => setKids(parseInt(e.target.value))}
+            />
+          </div>
+          <div className="guest-input">
+            <span>Babies</span>
+            <input
+              type="number"
+              min="0"
+              value={babies}
+              onChange={(e) => setBabies(parseInt(e.target.value))}
+            />
+          </div>
+        </div>
+      </div>
 
-            <div className="form-group">
-                <label>Max Budget: ${budget.toLocaleString()}</label>
-                <input
-                    type="range"
-                    min="1000"
-                    max="20000"
-                    step="500"
-                    value={budget}
-                    onChange={(e) => setBudget(parseInt(e.target.value))}
-                    className="budget-slider"
-                />
-            </div>
+      <div className="form-group">
+        <label>Max Budget: ${budget.toLocaleString()}</label>
+        <input
+          type="range"
+          min="1000"
+          max="20000"
+          step="500"
+          value={budget}
+          onChange={(e) => setBudget(parseInt(e.target.value))}
+          className="budget-slider"
+        />
+      </div>
 
-            <button type="submit" className="btn btn-primary search-btn">
-                Find Our Beach House
-            </button>
+      <button type="submit" className="btn btn-primary search-btn">
+        Find Our Beach House
+      </button>
 
-            <style jsx>{`
+      <style jsx>{`
         .search-form {
           background: rgba(30, 41, 59, 0.7);
           backdrop-filter: blur(12px);
@@ -249,6 +262,6 @@ export default function SearchForm() {
           padding: 16px;
         }
       `}</style>
-        </form>
-    );
+    </form>
+  );
 }

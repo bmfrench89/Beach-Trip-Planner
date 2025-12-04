@@ -12,8 +12,8 @@ async function getAccessToken() {
     const clientSecret = process.env.AMADEUS_CLIENT_SECRET;
 
     if (!clientId || !clientSecret) {
-        console.warn('Amadeus API keys missing');
-        return null;
+        console.warn('Amadeus API keys missing, using mock data');
+        return 'MOCK_TOKEN';
     }
 
     try {
@@ -37,9 +37,63 @@ async function getAccessToken() {
     return null;
 }
 
+/**
+ * Search Hotels via Amadeus API
+ * 
+ * 1. Authenticates with Amadeus to get an access token.
+ * 2. Searches for hotels in the destination city (by IATA code).
+ * 3. Fetches offers (prices) for the found hotels.
+ * 4. Transforms the data into a unified listing format.
+ * 
+ * @param {Object} params - Search parameters
+ * @param {string} params.destination - 'NC' or 'SC'
+ * @param {string} params.checkIn - Check-in date (YYYY-MM-DD)
+ * @param {string} params.checkOut - Check-out date (YYYY-MM-DD)
+ * @param {number} params.adults - Number of adults
+ * @param {number} params.budget - Max budget
+ * @returns {Promise<Array>} Array of hotel listings
+ */
 export async function searchHotels({ destination, checkIn, checkOut, adults, budget }) {
     const token = await getAccessToken();
     if (!token) return [];
+
+    if (token === 'MOCK_TOKEN') {
+        return [
+            {
+                id: 'MOCK_HOTEL_1',
+                title: 'Grand Coastal Resort',
+                type: 'Hotel',
+                price: 2500,
+                currency: 'USD',
+                rating: 4.5,
+                image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80',
+                location: destination,
+                specs: { beds: 2, guests: 4 }
+            },
+            {
+                id: 'MOCK_HOTEL_2',
+                title: 'Seaside Inn & Suites',
+                type: 'Hotel',
+                price: 1800,
+                currency: 'USD',
+                rating: 4.0,
+                image: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=800&q=80',
+                location: destination,
+                specs: { beds: 1, guests: 2 }
+            },
+            {
+                id: 'MOCK_HOTEL_3',
+                title: 'Oceanview Paradise',
+                type: 'Hotel',
+                price: 3200,
+                currency: 'USD',
+                rating: 4.8,
+                image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=800&q=80',
+                location: destination,
+                specs: { beds: 3, guests: 6 }
+            }
+        ].filter(h => h.price <= budget);
+    }
 
     // Map destination to IATA codes (Simplified for MVP)
     const cityCode = destination === 'NC' ? 'CLT' : 'MYR'; // Charlotte (NC) or Myrtle Beach (SC)

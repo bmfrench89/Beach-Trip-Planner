@@ -1,0 +1,38 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  listingId String
+  title     String
+  image     String?
+  price     Float
+  rating    Float?
+  location  String
+  type      String
+  beds      String? // Storing as string to handle "Varies" or numbers
+  guests    Int
+  addedBy   String
+  createdAt DateTime @default(now())
+  votes     Vote[]
+}
+
+model Vote {
+  id         String   @id @default(cuid())
+  favoriteId String
+  favorite   Favorite @relation(fields: [favoriteId], references: [id], onDelete: Cascade)
+  user       String
+  createdAt  DateTime @default(now())
+
+  @@unique([favoriteId, user])
+}
