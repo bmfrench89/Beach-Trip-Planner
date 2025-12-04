@@ -2,6 +2,7 @@ export async function searchVrbo(params) {
     const { location, checkIn, checkOut, guests } = params;
 
     try {
+        console.log(`Searching VRBO for: ${location}`);
         // 1. Geocode the location using OpenStreetMap (Nominatim)
         const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(location)}&format=json&limit=1`, {
             headers: {

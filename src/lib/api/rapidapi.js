@@ -23,6 +23,7 @@ export async function searchRentals({ destination, checkIn, checkOut, adults, ki
         console.warn('RapidAPI key missing');
         return [];
     }
+    console.log(`Searching Rentals with Host: ${apiHost}`);
 
     // Mapping destination to Hotels.com Destination IDs (approximate for MVP)
     // Myrtle Beach, SC: 1506246

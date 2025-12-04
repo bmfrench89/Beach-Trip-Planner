@@ -16,6 +16,8 @@ async function getAccessToken() {
         return null;
     }
 
+    console.log('Fetching Amadeus token...');
+
     try {
         const response = await fetch('https://test.api.amadeus.com/v1/security/oauth2/token', {
             method: 'POST',
