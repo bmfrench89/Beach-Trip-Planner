@@ -18,7 +18,7 @@ import { useRouter } from 'next/navigation';
  */
 export default function SearchForm() {
   const router = useRouter();
-  const [destination, setDestination] = useState('Carolinas');
+  const [destination, setDestination] = useState('');
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const [adults, setAdults] = useState('');
@@ -37,13 +37,23 @@ export default function SearchForm() {
       babies,
       budget,
     });
-    router.push(`/search?${params.toString()}`);
+    router.push(`/?${params.toString()}`);
   };
 
   return (
     <form onSubmit={handleSubmit} className="search-form">
       <div className="form-group">
-        {/* Destination selector removed - defaulting to Carolinas */}
+        <label>Where to?</label>
+        <div className="location-input-wrapper">
+          <input
+            type="text"
+            placeholder="e.g. Myrtle Beach, Maui, Destin"
+            value={destination}
+            onChange={(e) => setDestination(e.target.value)}
+            className="location-input"
+          />
+          <span className="location-icon">📍</span>
+        </div>
       </div>
 
       <div className="form-row">
@@ -238,6 +248,23 @@ export default function SearchForm() {
           margin-top: 12px;
           font-size: 1.125rem;
           padding: 16px;
+        }
+
+        .location-input-wrapper {
+          position: relative;
+        }
+
+        .location-input {
+          width: 100%;
+          padding: 12px 12px 12px 40px !important; /* Make room for icon */
+        }
+
+        .location-icon {
+          position: absolute;
+          left: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          font-size: 1.2rem;
         }
       `}</style>
     </form>

@@ -17,8 +17,8 @@ export async function searchRentals({ destination, checkIn, checkOut, adults, ki
 
     try {
         // 1. Get Destination ID
-        // Map 'NC' -> 'Wilmington', 'SC' -> 'Myrtle Beach' for better results
-        const query = destination === 'NC' ? 'Wilmington' : 'Myrtle Beach';
+        const query = destination;
+        console.log(`Booking.com: Searching Destination '${query}'`);
 
         const destUrl = `https://${apiHost}/api/v1/hotels/searchDestination?query=${encodeURIComponent(query)}`;
         const destRes = await fetch(destUrl, {
@@ -63,23 +63,36 @@ export async function searchRentals({ destination, checkIn, checkOut, adults, ki
 
         console.log(`Booking.com: Found ${searchData.data.hotels.length} raw results for ${query}`);
 
-        // 3. Transform
-        return searchData.data.hotels.map(prop => ({
-            id: prop.property.id || `booking-${Math.random()}`,
-            title: prop.property.name,
-            type: 'Vacation Rental',
-            price: prop.property.priceBreakdown?.grossPrice?.value || 0,
-            currency: prop.property.priceBreakdown?.grossPrice?.currency || 'USD',
-            rating: prop.property.reviewScore || 'N/A',
-            image: prop.property.photoUrls?.[0] || '',
-            location: destination,
-            specs: {
-                beds: 'Varies',
-                guests: adults + kids
-            },
-            source: 'booking',
-            link: '#' // Booking.com API doesn't always give a direct link in this endpoint
-        })).filter(r => r.price <= budget);
+        // 3. Transform and Filter
+        const results = searchData.data.hotels.map(prop => {
+            const price = prop.property.priceBreakdown?.grossPrice?.value || 0;
+            return {
+                id: prop.property.id || `booking-${Math.random()}`,
+                title: prop.property.name,
+                type: 'Vacation Rental',
+                price: price,
+                currency: prop.property.priceBreakdown?.grossPrice?.currency || 'USD',
+                rating: prop.property.reviewScore || 'N/A',
+                image: prop.property.photoUrls?.[0] || '',
+                location: destination,
+                specs: {
+                    beds: 'Varies',
+                    guests: adults + kids
+                },
+                source: 'booking',
+                link: '#'
+            };
+        });
+
+        console.log(`Booking.com: ${results.length} items before filter. Budget: ${budget}`);
+        const filtered = results.filter(r => {
+            const keep = r.price <= budget;
+            if (!keep) console.log(`Booking.com: Dropped '${r.title}' (Price: ${r.price} > ${budget})`);
+            return keep;
+        });
+        console.log(`Booking.com: ${filtered.length} items after filter`);
+
+        return filtered;
 
     } catch (error) {
         console.error('RapidAPI Search Error:', error);
