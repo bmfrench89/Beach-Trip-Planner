@@ -5,7 +5,7 @@
  * 2. Search for hotels/rentals using that ID
  * 3. Transform data to unified format
  */
-export async function searchRentals({ destination, checkIn, checkOut, adults, kids, budget }) {
+export async function searchRentals({ destination, dest_id, search_type, checkIn, checkOut, adults, kids, budget }) {
     const apiKey = process.env.RAPIDAPI_KEY;
     const apiHost = process.env.RAPIDAPI_HOST_BOOKING;
 
@@ -16,26 +16,33 @@ export async function searchRentals({ destination, checkIn, checkOut, adults, ki
     console.log(`Searching Rentals with Host: ${apiHost}`);
 
     try {
-        // 1. Get Destination ID
-        const query = destination;
-        console.log(`Booking.com: Searching Destination '${query}'`);
+        let destId = dest_id;
+        let searchType = search_type;
 
-        const destUrl = `https://${apiHost}/api/v1/hotels/searchDestination?query=${encodeURIComponent(query)}`;
-        const destRes = await fetch(destUrl, {
-            headers: {
-                'x-rapidapi-key': apiKey,
-                'x-rapidapi-host': apiHost
+        // 1. Get Destination ID (Only if not provided)
+        if (!destId) {
+            const query = destination;
+            console.log(`Booking.com: Searching Destination '${query}'`);
+
+            const destUrl = `https://${apiHost}/api/v1/hotels/searchDestination?query=${encodeURIComponent(query)}`;
+            const destRes = await fetch(destUrl, {
+                headers: {
+                    'x-rapidapi-key': apiKey,
+                    'x-rapidapi-host': apiHost
+                }
+            });
+            const destData = await destRes.json();
+
+            if (!destData.data || destData.data.length === 0) {
+                console.warn('Booking.com: No destination found');
+                return [];
             }
-        });
-        const destData = await destRes.json();
 
-        if (!destData.data || destData.data.length === 0) {
-            console.warn('Booking.com: No destination found');
-            return [];
+            destId = destData.data[0].dest_id;
+            searchType = destData.data[0].search_type;
+        } else {
+            console.log(`Booking.com: Using provided Dest ID: ${destId}`);
         }
-
-        const destId = destData.data[0].dest_id;
-        const searchType = destData.data[0].search_type;
 
         // 2. Search Properties
         const searchUrl = new URL(`https://${apiHost}/api/v1/hotels/searchHotels`);

@@ -1,23 +1,32 @@
 export async function searchVrbo(params) {
-    const { location, checkIn, checkOut, guests } = params;
+    const { location, lat: paramLat, lon: paramLon, checkIn, checkOut, guests } = params;
 
     try {
         console.log(`Searching VRBO for: ${location}`);
 
-        // 1. Geocode the location using OpenStreetMap (Nominatim)
-        const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(location)}&format=json&limit=1`, {
-            headers: {
-                'User-Agent': 'BeachTripPlanner/1.0'
+        let lat = paramLat;
+        let lon = paramLon;
+
+        // 1. Geocode if coordinates not provided
+        if (!lat || !lon) {
+            console.log('VRBO: Geocoding location...');
+            const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(location)}&format=json&limit=1`, {
+                headers: {
+                    'User-Agent': 'BeachTripPlanner/1.0'
+                }
+            });
+            const geoData = await geoRes.json();
+
+            if (!geoData || geoData.length === 0) {
+                console.warn('Could not geocode location:', location);
+                return [];
             }
-        });
-        const geoData = await geoRes.json();
 
-        if (!geoData || geoData.length === 0) {
-            console.warn('Could not geocode location:', location);
-            return [];
+            lat = geoData[0].lat;
+            lon = geoData[0].lon;
+        } else {
+            console.log(`VRBO: Using provided coords: ${lat}, ${lon}`);
         }
-
-        const { lat, lon } = geoData[0];
 
         // 2. Search VRBO
         const url = new URL('https://vrbo1.p.rapidapi.com/vacation-rental-data/vrbo/search');

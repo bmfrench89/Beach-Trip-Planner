@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import LocationAutocomplete from './LocationAutocomplete';
 
 /**
  * Search Form Component
@@ -18,7 +19,14 @@ import { useRouter } from 'next/navigation';
  */
 export default function SearchForm() {
   const router = useRouter();
-  const [destination, setDestination] = useState('');
+  // Precise location data
+  const [locationData, setLocationData] = useState({
+    label: '',
+    id: '',
+    type: '',
+    lat: '',
+    lon: ''
+  });
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const [adults, setAdults] = useState('');
@@ -29,7 +37,11 @@ export default function SearchForm() {
   const handleSubmit = (e) => {
     e.preventDefault();
     const params = new URLSearchParams({
-      destination,
+      destination: locationData.label || 'Myrtle Beach, SC', // Fallback if they didn't select
+      dest_id: locationData.id,
+      dest_type: locationData.type,
+      lat: locationData.lat,
+      lon: locationData.lon,
       checkIn,
       checkOut,
       adults,
@@ -44,16 +56,16 @@ export default function SearchForm() {
     <form onSubmit={handleSubmit} className="search-form">
       <div className="form-group">
         <label>Where to?</label>
-        <div className="location-input-wrapper">
-          <input
-            type="text"
-            placeholder="e.g. Myrtle Beach, Maui, Destin"
-            value={destination}
-            onChange={(e) => setDestination(e.target.value)}
-            className="location-input"
-          />
-          <span className="location-icon">📍</span>
-        </div>
+        <LocationAutocomplete
+          onSelect={(item) => setLocationData({
+            label: item.label,
+            id: item.id,
+            type: item.searchType,
+            lat: item.lat,
+            lon: item.lon
+          })}
+          defaultValue={locationData.label}
+        />
       </div>
 
       <div className="form-row">
@@ -250,22 +262,6 @@ export default function SearchForm() {
           padding: 16px;
         }
 
-        .location-input-wrapper {
-          position: relative;
-        }
-
-        .location-input {
-          width: 100%;
-          padding: 12px 12px 12px 40px !important; /* Make room for icon */
-        }
-
-        .location-icon {
-          position: absolute;
-          left: 12px;
-          top: 50%;
-          transform: translateY(-50%);
-          font-size: 1.2rem;
-        }
       `}</style>
     </form>
   );

@@ -4,11 +4,12 @@ import { searchRentals } from '@/lib/api/rapidapi';
 import { searchVrbo } from '@/lib/api/vrbo';
 
 export default async function Home({ searchParams }) {
-  const { destination, checkIn, checkOut, adults, kids, babies, budget } = searchParams;
+  const { destination, checkIn, checkOut, adults, kids, babies, budget, dest_id, dest_type, lat, lon } = searchParams;
 
   let allListings = [];
   let debugInfo = null;
-  const hasSearchParams = checkIn || adults;
+  // If user selected a location (dest_id/lat/lon) OR provided manual input, show results
+  const hasSearchParams = dest_id || lat || destination || checkIn || adults;
 
   if (hasSearchParams) {
     // Default to next month if dates are missing but other params exist
@@ -29,10 +30,26 @@ export default async function Home({ searchParams }) {
     // Fetch data (Single API Key - RapidAPI only)
     const [rentals, vrbo] = await Promise.all([
       // Booking.com Rentals (RapidAPI)
-      searchRentals({ destination: destination || 'Myrtle Beach, SC', checkIn: validCheckIn, checkOut: validCheckOut, adults: numAdults, kids: numKids, budget: numBudget }),
+      searchRentals({
+        destination: destination || 'Myrtle Beach, SC',
+        dest_id,
+        search_type: dest_type,
+        checkIn: validCheckIn,
+        checkOut: validCheckOut,
+        adults: numAdults,
+        kids: numKids,
+        budget: numBudget
+      }),
 
       // VRBO (RapidAPI)
-      searchVrbo({ location: destination || 'Myrtle Beach, SC', checkIn: validCheckIn, checkOut: validCheckOut, guests: numAdults + numKids })
+      searchVrbo({
+        location: destination || 'Myrtle Beach, SC',
+        lat,
+        lon,
+        checkIn: validCheckIn,
+        checkOut: validCheckOut,
+        guests: numAdults + numKids
+      })
     ]);
 
     allListings = [...rentals, ...vrbo];
