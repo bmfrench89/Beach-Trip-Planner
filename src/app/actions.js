@@ -68,3 +68,32 @@ export async function toggleVote(listingId, user) {
     return { error: 'Vote failed' };
   }
 }
+
+export async function fetchMetadata(url) {
+  if (!url) return { error: 'Invalid URL' };
+
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      }
+    });
+
+    if (!response.ok) return { error: 'Failed to access link' };
+
+    const html = await response.text();
+
+    const titleMatch = html.match(/<meta property="og:title" content="([^"]*)"/i) || html.match(/<title>([^<]*)<\/title>/i);
+    const imageMatch = html.match(/<meta property="og:image" content="([^"]*)"/i);
+    const priceMatch = html.match(/"price":\s*(\d+)/i) || html.match(/"amount":\s*(\d+)/i);
+
+    return {
+      title: titleMatch ? titleMatch[1] : '',
+      image: imageMatch ? imageMatch[1] : '',
+      price: priceMatch ? priceMatch[1] : ''
+    };
+  } catch (error) {
+    console.error('Metadata fetch failed:', error);
+    return { error: 'Could not fetch metadata' };
+  }
+}
