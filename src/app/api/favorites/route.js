@@ -24,7 +24,7 @@ export async function POST(request) {
 
         const favorite = await prisma.favorite.create({
             data: {
-                listingId: id,
+                listingId: String(id), // Ensure it's a string
                 title,
                 image,
                 price,

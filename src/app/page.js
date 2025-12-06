@@ -1,96 +1,49 @@
-import Hero from '@/components/Hero';
-import SearchResults from '@/components/SearchResults';
-import { searchRentals } from '@/lib/api/rapidapi';
-import { searchVrbo } from '@/lib/api/vrbo';
+import { PrismaClient } from '@prisma/client';
+import AddListingForm from '@/components/AddListingForm';
+import BoardCard from '@/components/BoardCard';
 
-export default async function Home({ searchParams }) {
-  const { destination, checkIn, checkOut, adults, kids, babies, budget, dest_id, dest_type, lat, lon } = searchParams;
+const prisma = new PrismaClient();
 
-  let allListings = [];
-  let debugInfo = null;
-  // If user selected a location (dest_id/lat/lon) OR provided manual input, show results
-  const hasSearchParams = dest_id || lat || destination || checkIn || adults;
+export const dynamic = 'force-dynamic';
 
-  if (hasSearchParams) {
-    // Default to next month if dates are missing but other params exist
-    const today = new Date();
-    const nextMonth = new Date(today.setMonth(today.getMonth() + 1));
-    const defaultCheckIn = nextMonth.toISOString().split('T')[0];
-    const nextWeek = new Date(nextMonth.setDate(nextMonth.getDate() + 5));
-    const defaultCheckOut = nextWeek.toISOString().split('T')[0];
-
-    const validCheckIn = checkIn || defaultCheckIn;
-    const validCheckOut = checkOut || defaultCheckOut;
-
-    // Convert params to numbers
-    const numAdults = parseInt(adults || '2');
-    const numKids = parseInt(kids || '0');
-    const numBudget = parseInt(budget || '10000');
-
-    // Fetch data (Single API Key - RapidAPI only)
-    const [rentals, vrbo] = await Promise.all([
-      // Booking.com Rentals (RapidAPI)
-      searchRentals({
-        destination: destination || 'Myrtle Beach, SC',
-        dest_id,
-        search_type: dest_type,
-        checkIn: validCheckIn,
-        checkOut: validCheckOut,
-        adults: numAdults,
-        kids: numKids,
-        budget: numBudget
-      }),
-
-      // VRBO (RapidAPI)
-      searchVrbo({
-        location: destination || 'Myrtle Beach, SC',
-        lat,
-        lon,
-        checkIn: validCheckIn,
-        checkOut: validCheckOut,
-        guests: numAdults + numKids
-      })
-    ]);
-
-    allListings = [...rentals, ...vrbo];
-
-    debugInfo = {
-      params: { checkIn: validCheckIn, checkOut: validCheckOut, adults: numAdults },
-      results: {
-        rentals: rentals.length,
-        vrbo: vrbo.length
-      }
-    };
-  }
+export default async function Home() {
+  const listings = await prisma.tripListing.findMany({
+    include: { votes: true },
+    orderBy: { createdAt: 'desc' }
+  });
 
   return (
-    <main className="main">
-      <Hero />
-
-      {hasSearchParams && (
-        <div id="results" className="container" style={{ paddingBottom: '80px' }}>
-          <SearchResults
-            listings={allListings}
-            destination={destination || 'Carolinas'}
-            numGuests={parseInt(adults || 0) + parseInt(kids || 0)}
-            budget={parseInt(budget || 0)}
-            debugInfo={debugInfo}
-          />
+    <main className="min-h-screen bg-slate-950 text-slate-100 pb-20">
+      {/* Header */}
+      <header className="py-8 bg-slate-900/50 border-b border-slate-800 sticky top-0 z-40 backdrop-blur-md">
+        <div className="container mx-auto px-4 flex justify-between items-center">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-teal-400 bg-clip-text text-transparent">
+                2026 Trip Board 🏖️
+            </h1>
+            <div className="text-sm font-medium text-slate-400">
+                {listings.length} Places Found
+            </div>
         </div>
-      )}
+      </header>
 
-      {/* Global styles for the main page layout */}
-      <style>{`
-        .main {
-          min-height: 100vh;
-          background: radial-gradient(circle at top right, #1e293b 0%, #0f172a 100%);
-        }
-        .container {
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 0 20px;
-        }
-      `}</style>
+      {/* Grid */}
+      <div className="container mx-auto px-4 mt-8">
+        {listings.length === 0 ? (
+            <div className="text-center py-20 opacity-50">
+                <div className="text-6xl mb-4">🗺️</div>
+                <h2 className="text-xl font-medium">Nothing here yet!</h2>
+                <p>Click the button below to add the first rental you found.</p>
+            </div>
+        ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {listings.map(listing => (
+                    <BoardCard key={listing.id} listing={listing} />
+                ))}
+            </div>
+        )}
+      </div>
+
+      <AddListingForm />
     </main>
   );
 }
