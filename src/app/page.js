@@ -7,62 +7,69 @@ import ListingCard from "../components/ListingCard";
 export default function Home() {
   const [savedListings, setSavedListings] = useState([]);
 
-  // Load from local storage on mount
+  // Load from API on mount
   useEffect(() => {
-    const saved = localStorage.getItem('tripPlannerListings');
-    if (saved) {
-      setSavedListings(JSON.parse(saved));
-    }
+    fetchListings();
   }, []);
 
-  const handleAddListing = (newListing) => {
-    const listingWithId = { ...newListing, id: (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString()), votes: 0 };
-    const updatedList = [listingWithId, ...savedListings];
-    // Keep sorted just in case
-    updatedList.sort((a, b) => (b.votes || 0) - (a.votes || 0));
-    setSavedListings(updatedList);
-    localStorage.setItem('tripPlannerListings', JSON.stringify(updatedList));
-  };
-
-  // Ref for debouncing the sort
-  const sortTimeoutRef = useRef(null);
-
-  const handleVoteListing = (id) => {
-    // 1. Updates votes immediately (visual feedback)
-    setSavedListings(currentList => {
-      const updatedList = currentList.map(item => {
-        if (item.id === id) {
-          return { ...item, votes: (item.votes || 0) + 1 };
-        }
-        return item;
-      });
-      localStorage.setItem('tripPlannerListings', JSON.stringify(updatedList));
-      return updatedList;
-    });
-
-    // 2. Debounce the sort (wait for user to stop clicking)
-    if (sortTimeoutRef.current) {
-      clearTimeout(sortTimeoutRef.current);
+  const fetchListings = async () => {
+    try {
+      const res = await fetch('/api/listings');
+      if (res.ok) {
+        const data = await res.json();
+        setSavedListings(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch listings', error);
     }
-
-    sortTimeoutRef.current = setTimeout(() => {
-      setSavedListings(currentList => {
-        const sortedList = [...currentList].sort((a, b) => (b.votes || 0) - (a.votes || 0));
-        localStorage.setItem('tripPlannerListings', JSON.stringify(sortedList));
-        return sortedList;
-      });
-      sortTimeoutRef.current = null;
-    }, 1500);
   };
 
-  const handleDeleteListing = (id) => {
-    // Immediate delete for better UX if confirm is blocked
-    console.log("Deleting listing", id);
-    setSavedListings(currentList => {
-      const updatedList = currentList.filter(item => item.id !== id);
-      localStorage.setItem('tripPlannerListings', JSON.stringify(updatedList));
-      return updatedList;
-    });
+  const handleAddListing = async (newListing) => {
+    // Optimistic UI update could be done here, but for simplicity we'll wait for API
+    try {
+      const res = await fetch('/api/listings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newListing),
+      });
+
+      if (res.ok) {
+        const savedListing = await res.json();
+        setSavedListings(prev => [savedListing, ...prev].sort((a, b) => (b.votes || 0) - (a.votes || 0)));
+      }
+    } catch (error) {
+      console.error('Failed to add listing', error);
+    }
+  };
+
+  const handleVoteListing = async (id) => {
+    // Optimistic update
+    setSavedListings(currentList =>
+      currentList.map(item =>
+        item.id === id ? { ...item, votes: (item.votes || 0) + 1 } : item
+      ).sort((a, b) => (b.votes || 0) - (a.votes || 0)) // Re-sort after vote? Maybe annoying if jumping around.
+      // Let's decide to NOT re-sort immediately or it jumps under your mouse.
+      // Just map it first.
+    );
+
+    try {
+      await fetch(`/api/listings/${id}/vote`, { method: 'PATCH' });
+      // Ideally we re-fetch or validate, but optimistic is fine for now
+    } catch (error) {
+      console.error('Failed to vote', error);
+      // Revert if failed?
+    }
+  };
+
+  const handleDeleteListing = async (id) => {
+    // Optimistic delete
+    setSavedListings(currentList => currentList.filter(item => item.id !== id));
+
+    try {
+      await fetch(`/api/listings/${id}`, { method: 'DELETE' });
+    } catch (error) {
+      console.error('Failed to delete', error);
+    }
   };
 
   return (
