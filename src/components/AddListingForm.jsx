@@ -11,6 +11,9 @@ export default function AddListingForm({ onAdd }) {
     // Manual override states
     const [manualTitle, setManualTitle] = useState('');
     const [manualPrice, setManualPrice] = useState('');
+    const [manualBedrooms, setManualBedrooms] = useState('');
+    const [manualBathrooms, setManualBathrooms] = useState('');
+    const [manualAmenities, setManualAmenities] = useState('');
 
     const fetchMetadata = async (inputUrl) => {
         if (!inputUrl) return;
@@ -32,6 +35,17 @@ export default function AddListingForm({ onAdd }) {
             setFetchedData(data);
             setManualTitle(data.title || ''); // Allow empty if really nothing found
             setManualPrice(data.price || '');
+
+            // Populate details if available
+            if (data.details) {
+                setManualBedrooms(data.details.bedrooms || '');
+                setManualBathrooms(data.details.bathrooms || '');
+                setManualAmenities(data.details.amenities ? data.details.amenities.join(', ') : '');
+            } else {
+                setManualBedrooms('');
+                setManualBathrooms('');
+                setManualAmenities('');
+            }
 
         } catch (err) {
             // Quietly handle error by defaulting to manual entry
@@ -65,13 +79,21 @@ export default function AddListingForm({ onAdd }) {
                 url,
                 title: manualTitle,
                 price: manualPrice,
-                image: fetchedData.image
+                image: fetchedData.image,
+                details: {
+                    bedrooms: manualBedrooms ? parseInt(manualBedrooms) : null,
+                    bathrooms: manualBathrooms ? parseFloat(manualBathrooms) : null,
+                    amenities: manualAmenities.split(',').map(s => s.trim()).filter(Boolean)
+                }
             });
             // Reset
             setUrl('');
             setFetchedData(null);
             setManualTitle('');
             setManualPrice('');
+            setManualBedrooms('');
+            setManualBathrooms('');
+            setManualAmenities('');
         }
     };
 
@@ -122,14 +144,50 @@ export default function AddListingForm({ onAdd }) {
                             placeholder="Property Name (optional)"
                         />
                     </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="text-xs font-bold text-gray-500 uppercase">Price / Night ($)</label>
+                            <input
+                                type="number"
+                                value={manualPrice}
+                                onChange={(e) => setManualPrice(e.target.value)}
+                                className="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-gray-900 font-semibold focus:ring-2 focus:ring-teal-500 outline-none"
+                                placeholder="e.g. 250"
+                            />
+                        </div>
+                        <div className="flex gap-2">
+                            <div className="flex-1">
+                                <label className="text-xs font-bold text-gray-500 uppercase">Bedrooms</label>
+                                <input
+                                    type="number"
+                                    value={manualBedrooms}
+                                    onChange={(e) => setManualBedrooms(e.target.value)}
+                                    className="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-gray-900 font-semibold focus:ring-2 focus:ring-teal-500 outline-none"
+                                    placeholder="#"
+                                />
+                            </div>
+                            <div className="flex-1">
+                                <label className="text-xs font-bold text-gray-500 uppercase">Bathrooms</label>
+                                <input
+                                    type="number"
+                                    value={manualBathrooms}
+                                    onChange={(e) => setManualBathrooms(e.target.value)}
+                                    className="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-gray-900 font-semibold focus:ring-2 focus:ring-teal-500 outline-none"
+                                    placeholder="#"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
                     <div>
-                        <label className="text-xs font-bold text-gray-500 uppercase">Price / Night ($)</label>
+                        <label className="text-xs font-bold text-gray-500 uppercase">Amenities (comma separated)</label>
                         <input
-                            type="number"
-                            value={manualPrice}
-                            onChange={(e) => setManualPrice(e.target.value)}
+                            type="text"
+                            value={manualAmenities}
+                            onChange={(e) => setManualAmenities(e.target.value)}
                             className="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-gray-900 font-semibold focus:ring-2 focus:ring-teal-500 outline-none"
-                            placeholder="Enter price..."
+                            placeholder="Pool, Wifi, Beachfront..."
                         />
                     </div>
                 </div>

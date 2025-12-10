@@ -64,6 +64,40 @@ export default function ListingCard({ listing, onDelete, onVote }) {
                     <span className="text-xs text-gray-400 font-medium">{listing.votes === 1 ? 'vote' : 'votes'}</span>
                 </div>
 
+                {/* Listing Details */}
+                {listing.details && (
+                    <div className="mb-4 space-y-2">
+                        <div className="flex items-center gap-3 text-sm text-gray-600 font-medium">
+                            {listing.details.bedrooms && (
+                                <span className="flex items-center gap-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+                                    {listing.details.bedrooms} bd
+                                </span>
+                            )}
+                            {listing.details.bathrooms && (
+                                <span className="flex items-center gap-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                    {listing.details.bathrooms} ba
+                                </span>
+                            )}
+                        </div>
+                        {listing.details.amenities && listing.details.amenities.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5">
+                                {listing.details.amenities.slice(0, 3).map((amenity, i) => (
+                                    <span key={i} className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-md">
+                                        {amenity}
+                                    </span>
+                                ))}
+                                {listing.details.amenities.length > 3 && (
+                                    <span className="px-2 py-0.5 bg-gray-50 text-gray-400 text-xs rounded-md">
+                                        +{listing.details.amenities.length - 3} more
+                                    </span>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 <div className="mt-auto pt-4 flex items-center justify-between border-t border-gray-50">
                     <div className="flex items-center gap-1">
                         <span className="text-xl font-bold text-gray-900">${price}</span>
