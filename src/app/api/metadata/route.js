@@ -30,9 +30,48 @@ export async function POST(request) {
         const $ = cheerio.load(html);
 
         // Extract Open Graph Data
-        const title = $('meta[property="og:title"]').attr('content') || $('title').text() || '';
-        const image = $('meta[property="og:image"]').attr('content') || '';
-        const description = $('meta[property="og:description"]').attr('content') || '';
+        // Extract Metadata with Fallbacks
+        const title =
+            $('meta[property="og:title"]').attr('content') ||
+            $('meta[name="twitter:title"]').attr('content') ||
+            $('title').text() ||
+            $('h1').first().text() ||
+            new URL(targetUrl).hostname.replace('www.', '') ||
+            '';
+
+        let image =
+            $('meta[property="og:image"]').attr('content') ||
+            $('meta[name="twitter:image"]').attr('content') ||
+            $('link[rel="image_src"]').attr('href') ||
+            '';
+
+        if (!image) {
+            // Fallback: Find the first substantial image
+            $('img').each((i, elem) => {
+                let src = $(elem).attr('src') || $(elem).attr('data-src') || $(elem).attr('data-original');
+
+                if (src) {
+                    // Resolve relative URLs
+                    if (src.startsWith('/')) {
+                        src = new URL(src, targetUrl).toString();
+                    }
+
+                    // Basic filter to avoid icons/tracking pixels
+                    // Ensure it's a full URL now and looks like an image
+                    if (src.startsWith('http') && !src.includes('icon') && !src.includes('logo') && !src.includes('svg')) {
+                        // Heuristic: skip tiny images if possible? 
+                        // For now, accept the first "real" looking image
+                        image = src;
+                        return false; // Break loop
+                    }
+                }
+            });
+        }
+
+        const description =
+            $('meta[property="og:description"]').attr('content') ||
+            $('meta[name="description"]').attr('content') ||
+            '';
 
         // Attempt to find price (very heuristic/fragile, varies by site)
         // Common patterns: $123, 120 USD, etc. in title or description

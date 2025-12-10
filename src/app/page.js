@@ -16,10 +16,20 @@ export default function Home() {
   }, []);
 
   const handleAddListing = (newListing) => {
-    const listingWithId = { ...newListing, id: crypto.randomUUID() };
+    const listingWithId = { ...newListing, id: (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString()) };
     const updatedList = [listingWithId, ...savedListings];
     setSavedListings(updatedList);
     localStorage.setItem('tripPlannerListings', JSON.stringify(updatedList));
+  };
+
+  const handleDeleteListing = (id) => {
+    // Immediate delete for better UX if confirm is blocked
+    console.log("Deleting listing", id);
+    setSavedListings(currentList => {
+      const updatedList = currentList.filter(item => item.id !== id);
+      localStorage.setItem('tripPlannerListings', JSON.stringify(updatedList));
+      return updatedList;
+    });
   };
 
   return (
@@ -32,25 +42,12 @@ export default function Home() {
             <h2 className="text-3xl font-bold text-gray-900">
               Your Saved Stays ({savedListings.length})
             </h2>
-            {savedListings.length > 0 && (
-              <button
-                onClick={() => {
-                  if (confirm('Clear all saved listings?')) {
-                    setSavedListings([]);
-                    localStorage.removeItem('tripPlannerListings');
-                  }
-                }}
-                className="text-red-500 hover:text-red-700 font-medium text-sm"
-              >
-                Clear All
-              </button>
-            )}
           </div>
 
           {savedListings.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {savedListings.map(listing => (
-                <ListingCard key={listing.id} listing={listing} />
+                <ListingCard key={listing.id} listing={listing} onDelete={() => handleDeleteListing(listing.id)} />
               ))}
             </div>
           ) : (

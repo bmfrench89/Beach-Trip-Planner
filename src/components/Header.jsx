@@ -8,9 +8,7 @@ export default function Header() {
                     BeachTrip<span className="text-teal-300">.</span>
                 </Link>
                 <nav className="hidden md:flex space-x-8">
-                    <Link href="#" className="text-white hover:text-teal-200 transition">Stays</Link>
-                    <Link href="#" className="text-white hover:text-teal-200 transition">Flights</Link>
-                    <Link href="#" className="text-white hover:text-teal-200 transition">Packages</Link>
+                    {/* Placeholder for future links */}
                 </nav>
                 <div className="flex items-center space-x-4">
                     <button className="text-white hover:text-teal-200 transition">Sign in</button>

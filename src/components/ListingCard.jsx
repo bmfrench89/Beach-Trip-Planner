@@ -1,13 +1,13 @@
 import Image from 'next/image';
 
-export default function ListingCard({ listing }) {
+export default function ListingCard({ listing, onDelete }) {
     const { title, price, url, image } = listing;
 
     // Use a placeholder image if none provided (manual listings won't have scraped images yet)
     const displayImage = image || "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80";
 
     return (
-        <div className="group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col h-full">
+        <div className="group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col h-full relative">
             <div className="relative h-48 w-full overflow-hidden bg-gray-100">
                 <Image
                     src={displayImage}
@@ -17,6 +17,25 @@ export default function ListingCard({ listing }) {
                     style={{ objectFit: 'cover' }}
                     className="group-hover:scale-105 transition-transform duration-500"
                 />
+
+                {/* Delete Button */}
+                {onDelete && (
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            onDelete();
+                        }}
+                        className="absolute top-3 left-3 bg-white/90 hover:bg-red-50 text-gray-500 hover:text-red-500 p-2 rounded-full shadow-sm transition-colors z-10"
+                        title="Remove Listing"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                )}
+
                 {/* External Link Indicator */}
                 <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg text-xs font-bold shadow-sm flex items-center gap-1">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">

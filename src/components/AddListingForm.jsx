@@ -30,13 +30,13 @@ export default function AddListingForm({ onAdd }) {
             if (!res.ok) throw new Error(data.error || 'Failed to fetch');
 
             setFetchedData(data);
-            setManualTitle(data.title || 'Untitled Listing');
-            setManualPrice(data.price || ''); // Empty if not found
+            setManualTitle(data.title || ''); // Allow empty if really nothing found
+            setManualPrice(data.price || '');
 
         } catch (err) {
-            console.error(err);
-            setError('Could not auto-fetch details. Please enter manually.');
-            setAppNameManual(true);
+            // Quietly handle error by defaulting to manual entry
+            setFetchedData({});
+            setError('Could not auto-fetch details. Please review.');
         } finally {
             setIsLoading(false);
         }
@@ -98,6 +98,12 @@ export default function AddListingForm({ onAdd }) {
             <div className="bg-white/95 backdrop-blur-sm p-6 rounded-3xl shadow-2xl w-full max-w-xl mx-auto animate-in fade-in slide-in-from-bottom-4">
                 <h3 className="text-gray-900 font-bold text-lg mb-4">Review Details</h3>
 
+                {error && (
+                    <div className="mb-4 bg-yellow-50 text-yellow-800 px-4 py-2 rounded-lg text-sm border border-yellow-200">
+                        Could not auto-fetch details. Please enter them manually.
+                    </div>
+                )}
+
                 {/* Image Preview */}
                 {fetchedData.image && (
                     <div className="relative h-40 w-full mb-4 rounded-xl overflow-hidden">
@@ -113,6 +119,7 @@ export default function AddListingForm({ onAdd }) {
                             value={manualTitle}
                             onChange={(e) => setManualTitle(e.target.value)}
                             className="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-gray-900 font-semibold focus:ring-2 focus:ring-teal-500 outline-none"
+                            placeholder="Property Name (optional)"
                         />
                     </div>
                     <div>
@@ -183,13 +190,6 @@ export default function AddListingForm({ onAdd }) {
                     )}
                 </button>
             </form>
-            {error && (
-                <div className="mt-4 text-center">
-                    <p className="text-red-200 bg-red-900/50 inline-block px-4 py-2 rounded-lg backdrop-blur-sm text-sm font-medium">
-                        {error} <button onClick={() => setFetchedData({})} className="underline ml-1">Enter Manually</button>
-                    </p>
-                </div>
-            )}
         </div>
     );
 }
