@@ -1,4 +1,10 @@
 import Link from 'next/link';
+import {
+    SignInButton,
+    SignedIn,
+    SignedOut,
+    UserButton
+} from '@clerk/nextjs';
 
 export default function Header() {
     return (
@@ -11,10 +17,18 @@ export default function Header() {
                     {/* Placeholder for future links */}
                 </nav>
                 <div className="flex items-center space-x-4">
-                    <button className="text-white hover:text-teal-200 transition">Sign in</button>
-                    <button className="bg-white text-teal-600 px-4 py-2 rounded-full font-medium hover:bg-gray-100 transition">
-                        Sign up
-                    </button>
+                    <SignedOut>
+                        <SignInButton mode="modal">
+                            <button className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full font-medium transition backdrop-blur-md">
+                                Sign In
+                            </button>
+                        </SignInButton>
+                    </SignedOut>
+                    <SignedIn>
+                        <div className="bg-white rounded-full p-1">
+                            <UserButton afterSignOutUrl="/" />
+                        </div>
+                    </SignedIn>
                 </div>
             </div>
         </header>

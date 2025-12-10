@@ -1,6 +1,6 @@
 import Image from 'next/image';
 
-export default function ListingCard({ listing, onDelete }) {
+export default function ListingCard({ listing, onDelete, onVote }) {
     const { title, price, url, image } = listing;
 
     // Use a placeholder image if none provided (manual listings won't have scraped images yet)
@@ -47,6 +47,22 @@ export default function ListingCard({ listing, onDelete }) {
 
             <div className="p-5 flex flex-col flex-grow">
                 <h3 className="text-lg font-bold text-gray-900 group-hover:text-teal-600 transition mb-1 line-clamp-1">{title}</h3>
+
+                <div className="flex items-center gap-2 mb-3">
+                    <button
+                        onClick={(e) => {
+                            e.preventDefault();
+                            onVote?.();
+                        }}
+                        className="flex items-center gap-1.5 bg-gray-100 hover:bg-teal-50 text-gray-600 hover:text-teal-600 px-3 py-1.5 rounded-full text-sm font-bold transition-colors"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+                        </svg>
+                        {listing.votes || 0}
+                    </button>
+                    <span className="text-xs text-gray-400 font-medium">{listing.votes === 1 ? 'vote' : 'votes'}</span>
+                </div>
 
                 <div className="mt-auto pt-4 flex items-center justify-between border-t border-gray-50">
                     <div className="flex items-center gap-1">

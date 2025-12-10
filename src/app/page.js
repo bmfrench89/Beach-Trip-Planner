@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Hero from "../components/Hero";
 import ListingCard from "../components/ListingCard";
 
@@ -16,10 +16,43 @@ export default function Home() {
   }, []);
 
   const handleAddListing = (newListing) => {
-    const listingWithId = { ...newListing, id: (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString()) };
+    const listingWithId = { ...newListing, id: (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString()), votes: 0 };
     const updatedList = [listingWithId, ...savedListings];
+    // Keep sorted just in case
+    updatedList.sort((a, b) => (b.votes || 0) - (a.votes || 0));
     setSavedListings(updatedList);
     localStorage.setItem('tripPlannerListings', JSON.stringify(updatedList));
+  };
+
+  // Ref for debouncing the sort
+  const sortTimeoutRef = useRef(null);
+
+  const handleVoteListing = (id) => {
+    // 1. Updates votes immediately (visual feedback)
+    setSavedListings(currentList => {
+      const updatedList = currentList.map(item => {
+        if (item.id === id) {
+          return { ...item, votes: (item.votes || 0) + 1 };
+        }
+        return item;
+      });
+      localStorage.setItem('tripPlannerListings', JSON.stringify(updatedList));
+      return updatedList;
+    });
+
+    // 2. Debounce the sort (wait for user to stop clicking)
+    if (sortTimeoutRef.current) {
+      clearTimeout(sortTimeoutRef.current);
+    }
+
+    sortTimeoutRef.current = setTimeout(() => {
+      setSavedListings(currentList => {
+        const sortedList = [...currentList].sort((a, b) => (b.votes || 0) - (a.votes || 0));
+        localStorage.setItem('tripPlannerListings', JSON.stringify(sortedList));
+        return sortedList;
+      });
+      sortTimeoutRef.current = null;
+    }, 1500);
   };
 
   const handleDeleteListing = (id) => {
@@ -47,7 +80,12 @@ export default function Home() {
           {savedListings.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {savedListings.map(listing => (
-                <ListingCard key={listing.id} listing={listing} onDelete={() => handleDeleteListing(listing.id)} />
+                <ListingCard
+                  key={listing.id}
+                  listing={listing}
+                  onDelete={() => handleDeleteListing(listing.id)}
+                  onVote={() => handleVoteListing(listing.id)}
+                />
               ))}
             </div>
           ) : (
