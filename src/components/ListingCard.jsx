@@ -1,0 +1,50 @@
+import Image from 'next/image';
+
+export default function ListingCard({ listing }) {
+    const { title, price, url, image } = listing;
+
+    // Use a placeholder image if none provided (manual listings won't have scraped images yet)
+    const displayImage = image || "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80";
+
+    return (
+        <div className="group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col h-full">
+            <div className="relative h-48 w-full overflow-hidden bg-gray-100">
+                <Image
+                    src={displayImage}
+                    alt={title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    style={{ objectFit: 'cover' }}
+                    className="group-hover:scale-105 transition-transform duration-500"
+                />
+                {/* External Link Indicator */}
+                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg text-xs font-bold shadow-sm flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                    External
+                </div>
+            </div>
+
+            <div className="p-5 flex flex-col flex-grow">
+                <h3 className="text-lg font-bold text-gray-900 group-hover:text-teal-600 transition mb-1 line-clamp-1">{title}</h3>
+
+                <div className="mt-auto pt-4 flex items-center justify-between border-t border-gray-50">
+                    <div className="flex items-center gap-1">
+                        <span className="text-xl font-bold text-gray-900">${price}</span>
+                        <span className="text-sm text-gray-500">/ night</span>
+                    </div>
+
+                    <a
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-gray-900 hover:bg-teal-600 text-white text-sm font-semibold py-2 px-4 rounded-lg transition-colors"
+                    >
+                        View Deal
+                    </a>
+                </div>
+            </div>
+        </div>
+    );
+}
