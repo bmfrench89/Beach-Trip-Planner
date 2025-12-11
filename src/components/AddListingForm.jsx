@@ -2,6 +2,12 @@
 
 import { useState } from 'react';
 
+const AMENITIES_OPTIONS = [
+    "Wifi", "Pool", "Air Conditioning", "Kitchen",
+    "Free Parking", "Beach Access", "Ocean View",
+    "Washer", "Dryer", "Hot Tub", "TV", "Pet Friendly"
+];
+
 export default function AddListingForm({ onAdd }) {
     const [url, setUrl] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -13,7 +19,7 @@ export default function AddListingForm({ onAdd }) {
     const [manualPrice, setManualPrice] = useState('');
     const [manualBedrooms, setManualBedrooms] = useState('');
     const [manualBathrooms, setManualBathrooms] = useState('');
-    const [manualAmenities, setManualAmenities] = useState('');
+    const [selectedAmenities, setSelectedAmenities] = useState([]);
 
     const fetchMetadata = async (inputUrl) => {
         if (!inputUrl) return;
@@ -40,11 +46,19 @@ export default function AddListingForm({ onAdd }) {
             if (data.details) {
                 setManualBedrooms(data.details.bedrooms || '');
                 setManualBathrooms(data.details.bathrooms || '');
-                setManualAmenities(data.details.amenities ? data.details.amenities.join(', ') : '');
+                // Try to match fetched amenities to our list
+                if (data.details.amenities && Array.isArray(data.details.amenities)) {
+                    const matched = AMENITIES_OPTIONS.filter(opt =>
+                        data.details.amenities.some(fetched => fetched.toLowerCase().includes(opt.toLowerCase()))
+                    );
+                    setSelectedAmenities(matched);
+                } else {
+                    setSelectedAmenities([]);
+                }
             } else {
                 setManualBedrooms('');
                 setManualBathrooms('');
-                setManualAmenities('');
+                setSelectedAmenities([]);
             }
 
         } catch (err) {
@@ -83,7 +97,7 @@ export default function AddListingForm({ onAdd }) {
                 details: {
                     bedrooms: manualBedrooms ? parseInt(manualBedrooms) : null,
                     bathrooms: manualBathrooms ? parseFloat(manualBathrooms) : null,
-                    amenities: manualAmenities.split(',').map(s => s.trim()).filter(Boolean)
+                    amenities: selectedAmenities
                 }
             });
             // Reset
@@ -93,7 +107,7 @@ export default function AddListingForm({ onAdd }) {
             setManualPrice('');
             setManualBedrooms('');
             setManualBathrooms('');
-            setManualAmenities('');
+            setSelectedAmenities([]);
         }
     };
 
@@ -181,14 +195,26 @@ export default function AddListingForm({ onAdd }) {
                     </div>
 
                     <div>
-                        <label className="text-xs font-bold text-gray-500 uppercase">Amenities (comma separated)</label>
-                        <input
-                            type="text"
-                            value={manualAmenities}
-                            onChange={(e) => setManualAmenities(e.target.value)}
-                            className="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-gray-900 font-semibold focus:ring-2 focus:ring-teal-500 outline-none"
-                            placeholder="Pool, Wifi, Beachfront..."
-                        />
+                        <label className="text-xs font-bold text-gray-500 uppercase mb-2 block">Amenities</label>
+                        <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto p-1">
+                            {AMENITIES_OPTIONS.map(opt => (
+                                <label key={opt} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedAmenities.includes(opt)}
+                                        onChange={(e) => {
+                                            if (e.target.checked) {
+                                                setSelectedAmenities(prev => [...prev, opt]);
+                                            } else {
+                                                setSelectedAmenities(prev => prev.filter(a => a !== opt));
+                                            }
+                                        }}
+                                        className="rounded border-gray-300 text-teal-500 focus:ring-teal-500 w-4 h-4"
+                                    />
+                                    {opt}
+                                </label>
+                            ))}
+                        </div>
                     </div>
                 </div>
 

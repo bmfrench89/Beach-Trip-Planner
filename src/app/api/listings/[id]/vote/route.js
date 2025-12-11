@@ -3,7 +3,7 @@ import prisma from '@/lib/prisma';
 
 export async function PATCH(request, { params }) {
     try {
-        const id = params.id;
+        const { id } = await params;
         const listing = await prisma.listing.update({
             where: { id },
             data: {
