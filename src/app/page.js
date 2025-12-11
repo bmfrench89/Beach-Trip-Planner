@@ -14,7 +14,7 @@ export default function Home() {
 
   const fetchListings = async () => {
     try {
-      const res = await fetch('/api/listings');
+      const res = await fetch('/api/listings', { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setSavedListings(data);
